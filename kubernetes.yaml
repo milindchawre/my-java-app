@@ -16,7 +16,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: java-api
-        image: ttl.sh/my-java-app:503926e
+        image: ttl.sh/my-java-app:4a641f0
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

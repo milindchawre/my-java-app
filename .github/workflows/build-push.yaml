@@ -1,0 +1,37 @@
+name: Build and Push Docker Image
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to make sure that GITHUB_TOKEN has write permission on the repo
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Docker Image
+        run: |
+          docker build -t ttl.sh/my-java-app:${GITHUB_SHA::7} .
+      - name: Push Docker Image
+        run: |
+          docker push ttl.sh/my-java-app:${GITHUB_SHA::7}
+      - name: Set image name
+        run: |
+          IMAGE_NAME=ttl.sh/my-java-app:${GITHUB_SHA::7}
+          sed -i "s|ttl.sh/my-java-app:.*|${IMAGE_NAME}|g" kubernetes.yaml
+      - name: Commit files
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git commit -m "Updating docker image in kubernetes manifest" -a
+      # - uses: EndBug/add-and-commit@v9
+      #   with:
+      #     message: Show GitHub Actions logo
+      #     committer_name: GitHub Actions
+      #     committer_email: actions@github.com
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
